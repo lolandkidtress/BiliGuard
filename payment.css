@@ -1,0 +1,107 @@
+:root {
+  --ani-primary: #19c8b9;
+  --ani-primary-hover: #3dd4c6;
+  --ani-success: #6fba2c;
+  --ani-error: #e05a5a;
+  --ani-warning: #f5c31c;
+  --ani-text: #794f27;
+  --ani-text-secondary: #9f927d;
+  --ani-bg: #f8f8f0;
+  --ani-bg-secondary: #f0e8d8;
+  --ani-border: #aaa69d;
+  --ani-border-light: #e8e2d6;
+  --ani-shadow: 0 3px 10px 0 rgba(61, 52, 40, 0.1);
+  --ani-radius: 24px;
+  --ani-radius-sm: 18px;
+  --ani-font: Nunito, "Noto Sans SC", "Zen Maru Gothic", "HarmonyOS Sans SC", "MiSans", -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+html {
+  background: var(--ani-bg);
+}
+
+body {
+  font-family: var(--ani-font);
+  font-size: 14px;
+  background: transparent;
+  color: var(--ani-text);
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 24px;
+  margin: 0;
+  color: var(--ani-primary);
+  font-weight: 700;
+}
+
+.header p {
+  margin: 8px 0 0;
+  color: var(--ani-text-secondary);
+  font-size: 13px;
+}
+
+.stripe-container {
+  background: #fff;
+  border-radius: var(--ani-radius);
+  padding: 24px;
+  min-height: 400px;
+  box-shadow: var(--ani-shadow);
+  border: 2px solid var(--ani-border-light);
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--ani-text-secondary);
+  font-size: 14px;
+}
+
+.error {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--ani-error);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.back-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 26px;
+  border: 2px solid transparent;
+  border-radius: var(--ani-radius-sm);
+  font-size: 14px;
+  font-family: var(--ani-font);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--ani-bg-secondary);
+  color: var(--ani-text);
+  border-color: var(--ani-border);
+}
+
+.btn-secondary:hover {
+  background: #e6dcc8;
+}
