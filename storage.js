@@ -3,6 +3,7 @@
 const STORAGE_KEYS = {
   AUTH: 'auth',
   WHITELIST: 'whitelist',
+  BLACKLIST: 'blacklist',
   DOMAIN_RULES: 'domainRules',
   MODE: 'mode',
   TEMP_UNLOCK_UNTIL: 'tempUnlockUntil',
@@ -22,6 +23,11 @@ const DEFAULT_DATA = {
     bvIds: [],
     ssIds: [],
     ssNames: []
+  },
+  blacklist: {
+    upIds: [],
+    upNames: [],
+    bvIds: []
   },
   domainRules: {
     anime: false,
@@ -275,6 +281,69 @@ async function removeSsId(ssId) {
   return whitelist;
 }
 
+async function getBlacklist() {
+  const userId = await getCurrentUserId();
+  if (!userId) return DEFAULT_DATA.blacklist;
+  const key = userKey(STORAGE_KEYS.BLACKLIST, userId);
+  const data = await storageGet([key]);
+  const blacklist = data[key] || DEFAULT_DATA.blacklist;
+  return {
+    upIds: Array.isArray(blacklist?.upIds) ? blacklist.upIds : [],
+    upNames: Array.isArray(blacklist?.upNames) ? blacklist.upNames : [],
+    bvIds: Array.isArray(blacklist?.bvIds) ? blacklist.bvIds : []
+  };
+}
+
+async function setBlacklist(blacklist) {
+  const userId = await getCurrentUserId();
+  if (!userId) return;
+  const key = userKey(STORAGE_KEYS.BLACKLIST, userId);
+  await storageSet({ [key]: blacklist });
+}
+
+async function addBlackUpId(upId, upName) {
+  const blacklist = await getBlacklist();
+  if (!Array.isArray(blacklist.upIds)) blacklist.upIds = [];
+  if (!Array.isArray(blacklist.upNames)) blacklist.upNames = [];
+  if (!blacklist.upIds.includes(upId)) {
+    blacklist.upIds.push(upId);
+    blacklist.upNames.push(upName || '');
+    await setBlacklist(blacklist);
+  }
+  return blacklist;
+}
+
+async function removeBlackUpId(upId) {
+  const blacklist = await getBlacklist();
+  if (!Array.isArray(blacklist.upIds)) blacklist.upIds = [];
+  if (!Array.isArray(blacklist.upNames)) blacklist.upNames = [];
+  const idx = blacklist.upIds.indexOf(upId);
+  if (idx >= 0) {
+    blacklist.upIds.splice(idx, 1);
+    blacklist.upNames.splice(idx, 1);
+  }
+  await setBlacklist(blacklist);
+  return blacklist;
+}
+
+async function addBlackBvId(bvId) {
+  const blacklist = await getBlacklist();
+  if (!Array.isArray(blacklist.bvIds)) blacklist.bvIds = [];
+  if (!blacklist.bvIds.includes(bvId)) {
+    blacklist.bvIds.push(bvId);
+    await setBlacklist(blacklist);
+  }
+  return blacklist;
+}
+
+async function removeBlackBvId(bvId) {
+  const blacklist = await getBlacklist();
+  if (!Array.isArray(blacklist.bvIds)) blacklist.bvIds = [];
+  blacklist.bvIds = blacklist.bvIds.filter(id => id !== bvId);
+  await setBlacklist(blacklist);
+  return blacklist;
+}
+
 async function getDomainRules() {
   const userId = await getCurrentUserId();
   if (!userId) return DEFAULT_DATA.domainRules;
@@ -492,6 +561,7 @@ async function initStorage() {
   // 清理旧版本无 userId 后缀的业务数据残留
   await chrome.storage.local.remove([
     STORAGE_KEYS.WHITELIST,
+    STORAGE_KEYS.BLACKLIST,
     STORAGE_KEYS.DOMAIN_RULES,
     STORAGE_KEYS.MODE,
     STORAGE_KEYS.TEMP_UNLOCK_UNTIL,
@@ -508,6 +578,9 @@ if (typeof module !== 'undefined' && module.exports) {
     addUpId, removeUpId,
     addBvId, removeBvId,
     addSsId, removeSsId,
+    getBlacklist, setBlacklist,
+    addBlackUpId, removeBlackUpId,
+    addBlackBvId, removeBlackBvId,
     getDomainRules, setDomainRules,
     getMode, setMode,
     getTempUnlockUntil, setTempUnlockUntil, isTempUnlocked,

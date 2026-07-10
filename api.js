@@ -219,6 +219,17 @@ const api = (function () {
     });
   }
 
+  async function getBlacklist() {
+    return apiRequest('/bg/blacklist', { method: 'GET' });
+  }
+
+  async function saveBlacklist(blacklist, configPassword) {
+    return apiRequest('/bg/blacklist', {
+      method: 'POST',
+      body: JSON.stringify({ ...blacklist, configPassword: await hashPassword(configPassword) })
+    });
+  }
+
   async function saveStats(stats, machineId) {
     return apiRequest('/bg/stats', {
       method: 'POST',
@@ -340,6 +351,8 @@ const api = (function () {
     logout,
     getWhitelist,
     saveWhitelist,
+    getBlacklist,
+    saveBlacklist,
     saveStats,
     getStats,
     getSettings,

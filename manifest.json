@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "哔哩护苗",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "B站内容过滤与播放控制插件，支持白名单管理和家长控制",
   "permissions": [
     "storage",

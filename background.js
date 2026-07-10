@@ -90,6 +90,14 @@ async function autoSyncFromBackend() {
       console.log('[哔哩护苗 Background] 已从云端同步白名单:', safe);
     }
 
+    const blResult = await api.getBlacklist();
+    console.log('[Background Sync] 黑名单结果:', blResult.success);
+    if (blResult.success && blResult.data) {
+      const safe = normalizeBlacklist(blResult.data);
+      await setBlacklist(safe);
+      console.log('[哔哩护苗 Background] 已从云端同步黑名单:', safe);
+    }
+
     const stResult = await api.getSettings();
     console.log('[Background Sync] 设置结果:', stResult.success);
     if (stResult.success && stResult.data) {
@@ -144,6 +152,14 @@ function normalizeWhitelist(data) {
     bvIds: Array.isArray(data?.bvIds) ? data.bvIds : [],
     ssIds: Array.isArray(data?.ssIds) ? data.ssIds : [],
     ssNames: Array.isArray(data?.ssNames) ? data.ssNames : []
+  };
+}
+
+function normalizeBlacklist(data) {
+  return {
+    upIds: Array.isArray(data?.upIds) ? data.upIds : [],
+    upNames: Array.isArray(data?.upNames) ? data.upNames : [],
+    bvIds: Array.isArray(data?.bvIds) ? data.bvIds : []
   };
 }
 
@@ -293,6 +309,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const whitelist = await removeSsId(request.ssId);
         sendResponse({ success: true, data: whitelist });
       }
+      else if (request.action === 'getBlacklist') {
+        const blacklist = await getBlacklist();
+        sendResponse({ success: true, data: blacklist });
+      }
+      else if (request.action === 'addBlackUpId') {
+        const blacklist = await addBlackUpId(request.upId, request.upName);
+        sendResponse({ success: true, data: blacklist });
+      }
+      else if (request.action === 'removeBlackUpId') {
+        const blacklist = await removeBlackUpId(request.upId);
+        sendResponse({ success: true, data: blacklist });
+      }
+      else if (request.action === 'addBlackBvId') {
+        const blacklist = await addBlackBvId(request.bvId);
+        sendResponse({ success: true, data: blacklist });
+      }
+      else if (request.action === 'removeBlackBvId') {
+        const blacklist = await removeBlackBvId(request.bvId);
+        sendResponse({ success: true, data: blacklist });
+      }
       else if (request.action === 'getSeasonId') {
         const ids = await fetchSeasonIds({ epId: request.epId, seasonId: request.seasonId });
         sendResponse({ success: true, data: ids });
@@ -334,6 +370,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       else if (request.action === 'setWhitelist') {
         await setWhitelist(request.whitelist);
+        sendResponse({ success: true });
+      }
+      else if (request.action === 'setBlacklist') {
+        await setBlacklist(request.blacklist);
         sendResponse({ success: true });
       }
       else if (request.action === 'getBlockedVideos') {

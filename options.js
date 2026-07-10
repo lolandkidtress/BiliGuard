@@ -27,6 +27,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnAddSs = document.getElementById('btn-add-ss');
   const ssList = document.getElementById('ss-list');
 
+  const blackUpInput = document.getElementById('black-up-input');
+  const blackUpNameInput = document.getElementById('black-up-name-input');
+  const btnAddBlackUp = document.getElementById('btn-add-black-up');
+  const blackUpList = document.getElementById('black-up-list');
+
+  const blackBvInput = document.getElementById('black-bv-input');
+  const btnAddBlackBv = document.getElementById('btn-add-black-bv');
+  const blackBvList = document.getElementById('black-bv-list');
+
   const btnPull = document.getElementById('btn-pull');
   const btnPush = document.getElementById('btn-push');
   const syncMessage = document.getElementById('sync-message');
@@ -175,6 +184,104 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       console.error('加载白名单失败', e);
     }
+  }
+
+  async function loadBlacklist() {
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+      const blacklist = response?.data || { upIds: [], upNames: [], bvIds: [] };
+      renderBlackUpList(blacklist);
+      renderBlackBvList(blacklist.bvIds);
+    } catch (e) {
+      console.error('加载黑名单失败', e);
+    }
+  }
+
+  function renderBlackUpList(blacklist) {
+    const upIds = blacklist?.upIds || [];
+    const upNames = blacklist?.upNames || [];
+    blackUpList.innerHTML = '';
+    if (!upIds || upIds.length === 0) {
+      blackUpList.innerHTML = '<li class="empty-tip">暂无黑名单UP主</li>';
+      return;
+    }
+    for (let i = 0; i < upIds.length; i++) {
+      const id = upIds[i];
+      const name = upNames[i] || '';
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${escapeHtml(name ? name + ' (' + id + ')' : id)}</span>`;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-danger';
+      delBtn.textContent = '删除';
+      delBtn.addEventListener('click', () => removeBlackUpId(id));
+      li.appendChild(delBtn);
+      blackUpList.appendChild(li);
+    }
+  }
+
+  function renderBlackBvList(bvIds) {
+    blackBvList.innerHTML = '';
+    if (!bvIds || bvIds.length === 0) {
+      blackBvList.innerHTML = '<li class="empty-tip">暂无黑名单BV号</li>';
+      return;
+    }
+    for (const id of bvIds) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${escapeHtml(id)}</span>`;
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn btn-danger';
+      delBtn.textContent = '删除';
+      delBtn.addEventListener('click', () => removeBlackBvId(id));
+      li.appendChild(delBtn);
+      blackBvList.appendChild(li);
+    }
+  }
+
+  async function removeBlackUpId(upId) {
+    await chrome.runtime.sendMessage({ action: 'removeBlackUpId', upId });
+    const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+    renderBlackUpList(response?.data);
+    await pushCurrentBlacklist();
+  }
+
+  async function removeBlackBvId(bvId) {
+    await chrome.runtime.sendMessage({ action: 'removeBlackBvId', bvId });
+    const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+    renderBlackBvList(response?.data?.bvIds || []);
+    await pushCurrentBlacklist();
+  }
+
+  async function addBlackUpId() {
+    const value = blackUpInput.value.trim();
+    if (!value) return;
+    if (!/^\d+$/.test(value)) {
+      showToast('UP主ID应为纯数字', 'error');
+      return;
+    }
+    let upName = blackUpNameInput.value.trim();
+    if (!upName) {
+      upName = await fetchUpName(value);
+    }
+    await chrome.runtime.sendMessage({ action: 'addBlackUpId', upId: value, upName });
+    blackUpInput.value = '';
+    blackUpNameInput.value = '';
+    const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+    renderBlackUpList(response?.data);
+    await pushCurrentBlacklist();
+  }
+
+  async function addBlackBvId() {
+    const value = blackBvInput.value.trim();
+    if (!value) return;
+    if (!/^BV[0-9A-Za-z]+$/.test(value)) {
+      showToast('BV号格式不正确（如 BV1YERYBDEES）', 'error');
+      return;
+    }
+    await chrome.runtime.sendMessage({ action: 'addBlackBvId', bvId: value });
+    blackBvInput.value = '';
+    const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+    renderBlackBvList(response?.data?.bvIds || []);
+    await pushCurrentBlacklist();
   }
 
   async function loadSettings() {
@@ -380,6 +487,38 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (e) {
       console.error('[哔哩护苗] 自动同步白名单异常', e);
+    }
+  }
+
+  async function pushCurrentBlacklist() {
+    console.log('[哔哩护苗 Options] pushCurrentBlacklist 被调用');
+    if (!cachedConfigPassword) {
+      console.log('[哔哩护苗 Options] 无缓存配置密码，跳过推送黑名单');
+      return;
+    }
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+      console.log('[哔哩护苗 Options] 推送前 blacklist:', response?.data);
+      const raw = response?.data || {};
+      const blacklist = {
+        upIds: Array.isArray(raw.upIds) ? raw.upIds : [],
+        upNames: Array.isArray(raw.upNames) ? raw.upNames : [],
+        bvIds: Array.isArray(raw.bvIds) ? raw.bvIds : []
+      };
+      console.log('[哔哩护苗 Options] 构造后的 blacklist:', blacklist);
+      const result = await api.saveBlacklist(blacklist, cachedConfigPassword);
+      console.log('[哔哩护苗 Options] saveBlacklist 结果:', result);
+      if (result.success) {
+        const blResult = await api.getBlacklist();
+        console.log('[哔哩护苗 Options] 拉取黑名单结果:', blResult);
+        if (blResult.success && blResult.data) {
+          await chrome.runtime.sendMessage({ action: 'setBlacklist', blacklist: blResult.data });
+        }
+      } else {
+        console.error('[哔哩护苗] 自动同步黑名单失败:', result.message);
+      }
+    } catch (e) {
+      console.error('[哔哩护苗] 自动同步黑名单异常', e);
     }
   }
 
@@ -921,6 +1060,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   ssInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addSsId(); });
   ssNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addSsId(); });
 
+  if (btnAddBlackUp) btnAddBlackUp.addEventListener('click', addBlackUpId);
+  if (blackUpInput) blackUpInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addBlackUpId(); });
+  if (blackUpNameInput) blackUpNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addBlackUpId(); });
+  if (btnAddBlackBv) btnAddBlackBv.addEventListener('click', addBlackBvId);
+  if (blackBvInput) blackBvInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addBlackBvId(); });
+
   if (btnPull) btnPull.addEventListener('click', pullWhitelist);
   if (btnPush) btnPush.addEventListener('click', pushWhitelist);
 
@@ -1151,6 +1296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('[哔哩护苗 Options] 初始同步失败:', e);
     }
     loadWhitelist();
+    loadBlacklist();
     loadSettings();
     loadMode();
     loadMembershipExpire();

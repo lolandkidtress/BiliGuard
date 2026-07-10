@@ -503,6 +503,20 @@
     }
   }
 
+  async function getBlacklist() {
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getBlacklist' });
+      const data = response?.data || {};
+      return {
+        upIds: Array.isArray(data?.upIds) ? data.upIds : [],
+        upNames: Array.isArray(data?.upNames) ? data.upNames : [],
+        bvIds: Array.isArray(data?.bvIds) ? data.bvIds : []
+      };
+    } catch (e) {
+      return { upIds: [], upNames: [], bvIds: [] };
+    }
+  }
+
   // 番剧 ss 号：URL 直接是 ss 则取之，是 ep 则委托 background 反查
   async function getSeasonIdsForCurrentPage() {
     const ss = window.location.pathname.match(/\/bangumi\/play\/ss(\d+)/);
@@ -547,10 +561,17 @@
     });
   }
 
-  function createOverlay(message, requestInfo) {
+  function createOverlay(message, requestInfo, reason = 'whitelist') {
     if (overlayElement) {
       overlayElement.remove();
     }
+
+    const descTextMap = {
+      whitelist: '请联系管理员将内容添加到白名单中',
+      blacklist: '请联系管理员将该内容从黑名单中移除',
+      channel: '该频道已被管理员设置为不可观看',
+      timed: '当前不在家长设定的可观看时段'
+    };
 
     const overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
@@ -576,7 +597,7 @@
     title.style.cssText = 'font-size: 26px; margin-bottom: 16px; text-align: center; font-weight: 700;';
 
     const desc = document.createElement('p');
-    desc.textContent = '请联系管理员将内容添加到白名单中';
+    desc.textContent = descTextMap[reason] || descTextMap.whitelist;
     desc.style.cssText = 'font-size: 14px; color: #e8e2d6; margin-bottom: 16px; text-align: center;';
 
     // 临时解锁输入区
@@ -659,8 +680,8 @@
     overlay.appendChild(title);
     overlay.appendChild(desc);
 
-    // 申请加入白名单按钮（仅 BV/番剧可申请）
-    if (requestInfo) {
+    // 申请加入白名单按钮（仅 BV/番剧白名单拦截时显示）
+    if (requestInfo && reason === 'whitelist') {
       const requestWrap = document.createElement('div');
       requestWrap.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 14px 0;';
 
@@ -807,7 +828,7 @@
           if (matched && blocked) {
             console.log('[哔哩护苗] 拦截频道:', key);
             pauseAllVideos();
-            createOverlay(`该${rule.name}内容已被拦截`);
+            createOverlay(`该${rule.name}内容已被拦截`, null, 'channel');
             recordBlock(`channel:${key}`);
             isChecking = false;
             return;
@@ -815,7 +836,28 @@
         }
       }
 
-      // 3. 宽松模式：频道放行后其余也放行，白名单不生效
+      // 3. 宽松/时间-宽松：执行黑名单检查（指定 BV 或 UP 主屏蔽）
+      if (effectiveMode === 'lenient' || effectiveMode === 'timed-lenient') {
+        const bvId = getBvIdFromUrl();
+        if (bvId) {
+          const blacklist = await getBlacklist();
+          const upId = getUpIdFromDom();
+          const bvBlocked = blacklist.bvIds.includes(bvId);
+          const upBlocked = upId && blacklist.upIds.includes(upId);
+          if (bvBlocked || upBlocked) {
+            console.log('[哔哩护苗] 黑名单拦截:', { bvBlocked, upBlocked });
+            pauseAllVideos();
+            const requestInfo = { contentType: 'bv', contentId: bvId, title: getVideoTitle() || '', upName: getUpNameFromDom() || '' };
+            createOverlay('该内容已被黑名单屏蔽', requestInfo, 'blacklist');
+            recordBlock('blacklist');
+            stopCurrentTracking();
+            isChecking = false;
+            return;
+          }
+        }
+      }
+
+      // 4. 宽松模式：频道和黑名单放行后其余也放行，白名单不生效
       if (effectiveMode === 'lenient' || effectiveMode === 'timed-lenient') {
         console.log('[哔哩护苗] 宽松模式，放行');
         removeOverlay();
@@ -824,11 +866,11 @@
         return;
       }
 
-      // 4. 时间模式-时段外：全部拦截
+      // 5. 时间模式-时段外：全部拦截
       if (effectiveMode === 'timed-block') {
         console.log('[哔哩护苗] 时间模式-时段外，全部拦截');
         pauseAllVideos();
-        createOverlay('当前不在可观看时段');
+        createOverlay('当前不在可观看时段', null, 'timed');
         recordBlock('timed-block');
         stopCurrentTracking();
         isChecking = false;
@@ -850,7 +892,7 @@
           console.log('[哔哩护苗] 视频被拦截');
           pauseAllVideos();
           const requestInfo = { contentType: 'bv', contentId: bvId, title: getVideoTitle() || '', upName: getUpNameFromDom() || '' };
-          createOverlay('该视频不在白名单中', requestInfo);
+          createOverlay('该视频不在白名单中', requestInfo, 'whitelist');
           recordBlock('not-in-whitelist');
           stopCurrentTracking();
         } else {
@@ -878,7 +920,7 @@
             title: getVideoTitle() || '',
             upName: ''
           };
-          createOverlay('该番剧不在白名单中', requestInfo);
+          createOverlay('该番剧不在白名单中', requestInfo, 'whitelist');
           recordBlock('not-in-whitelist');
           stopCurrentTracking();
         }

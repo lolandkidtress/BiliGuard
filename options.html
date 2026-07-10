@@ -129,6 +129,34 @@
     </div>
 
     <div class="card">
+      <h2>黑名单</h2>
+      <p class="config-lock-desc">仅在「宽松模式」或「时间模式」的可用时段内生效。指定的 UP 主或 BV 号会被强制屏蔽，优先级高于频道开关。</p>
+
+      <div class="card">
+        <h3>UP主黑名单</h3>
+        <div class="form-row">
+          <input type="text" id="black-up-input" placeholder="输入 UP主ID（数字）">
+          <input type="text" id="black-up-name-input" placeholder="UP主名字（可选）">
+          <button class="btn btn-primary" id="btn-add-black-up">添加</button>
+        </div>
+        <ul class="list" id="black-up-list">
+          <li class="empty-tip">暂无黑名单UP主</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>BV号黑名单</h3>
+        <div class="form-row">
+          <input type="text" id="black-bv-input" placeholder="输入 BV号（如 BV1YERYBDEES）">
+          <button class="btn btn-primary" id="btn-add-black-bv">添加</button>
+        </div>
+        <ul class="list" id="black-bv-list">
+          <li class="empty-tip">暂无黑名单BV号</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>频道拦截设置</h2>
       <p class="config-lock-desc">以下频道开关仅在「宽松模式」或「时间模式」的可用时段内生效。严格模式下只认白名单，频道开关不生效。</p>
       <div class="quick-toggle-row">
