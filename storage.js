@@ -87,9 +87,8 @@ const DEFAULT_DATA = {
   tempUnlockUntil: 0,
   videoStats: [],
   blockedVideos: [],
-  apiBaseUrl: 'https://your-api-domain.com/7wa',
-  // 请替换为你自己的后端 API 地址
-  stripeConfig: {
+  apiBaseUrl: window.__BILIGUARD_CONFIG__?.apiBaseUrl || 'https://your-api-domain.com/7wa',
+  stripeConfig: window.__BILIGUARD_CONFIG__?.stripe || {
     publishableKey: 'pk_test_your_stripe_publishable_key',
     premiumPricingTableId: 'prctbl_your_premium_table_id',
     lifetimePricingTableId: 'prctbl_your_lifetime_table_id'

@@ -1,4 +1,23 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  // 从 config.js 应用联系方式
+  try {
+    const contact = window.__BILIGUARD_CONFIG__?.contact;
+    if (contact) {
+      document.querySelectorAll('#contact-modal a[href^="https://wa.me/"]').forEach(a => {
+        if (contact.whatsapp) a.href = contact.whatsapp;
+      });
+      document.querySelectorAll('#contact-modal a[href^="mailto:"]').forEach(a => {
+        if (contact.email) {
+          a.href = 'mailto:' + contact.email;
+          const text = a.textContent.trim();
+          if (text && !text.includes('WhatsApp')) a.textContent = contact.email;
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('应用联系方式配置失败', e);
+  }
+
   // 初始化 API base URL 与本地 token
   try {
     const [urlRes, authRes] = await Promise.all([

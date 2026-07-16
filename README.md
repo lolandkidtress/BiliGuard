@@ -95,16 +95,39 @@ BiliGuard/
 
 ## 配置说明
 
-开源版本已移除真实域名和支付密钥，使用前请替换以下占位符：
+开源版本不包含真实后端域名、支付密钥和联系方式。本地开发时请按以下步骤配置：
 
-| 文件 | 占位符 | 说明 |
-|------|--------|------|
-| `manifest.json` | `your-api-domain.com` | 后端 API 域名 |
-| `storage.js` | `https://your-api-domain.com/7wa` | API base URL |
-| `storage.js` | `pk_test_your_stripe_publishable_key` | Stripe 公钥（可选） |
-| `options.html` | `your-whatsapp-number` | WhatsApp 联系方式（可选） |
-| `options.html` | `your-email@example.com` | 联系邮箱（可选） |
-| `dashboard.html` | 同上 | 同上 |
+### 1. 创建本地配置文件
+
+```bash
+cp config.example.js config.js
+```
+
+然后修改 `config.js`，填入你的真实值：
+
+| 配置项 | 说明 |
+|--------|------|
+| `apiBaseUrl` | 后端 API 基础地址 |
+| `stripe.publishableKey` | Stripe 公钥（可选） |
+| `stripe.premiumPricingTableId` | 高级版价格表 ID（可选） |
+| `stripe.lifetimePricingTableId` | 终身版价格表 ID（可选） |
+| `contact.whatsapp` | WhatsApp 联系方式（可选） |
+| `contact.email` | 联系邮箱（可选） |
+
+`config.js` 已加入 `.gitignore`，不会提交到仓库。
+
+### 2. 修改 manifest.json 中的后端域名
+
+将 `manifest.json` 中的 `your-api-domain.com` 替换为你自己的后端 API 域名：
+
+```json
+"host_permissions": [
+  "*://*.bilibili.com/*",
+  "*://your-api-domain.com/*"
+]
+```
+
+`manifest.json` 是扩展必需文件，需要纳入版本控制。建议只替换域名，其他结构保持不变。
 
 ---
 
