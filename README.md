@@ -176,6 +176,15 @@ COPYFILE_DISABLE=1 zip -r BiliGuard-extension.zip BiliGuard \
 
 ---
 
+## 联系方式
+
+- 邮箱：support@7wapilot.com
+- 企业微信：见下方二维码
+
+![企业微信二维码](icons/7wapilot-wecom-scan.png)
+
+---
+
 ## License
 
 [MIT](LICENSE)
