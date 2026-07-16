@@ -9,8 +9,7 @@
   ],
   "host_permissions": [
     "*://*.bilibili.com/*",
-    "*://api.7wapilot.com/*",
-    "*://uatwhatsapp.qiscrm.com/*"
+    "*://your-api-domain.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -46,6 +45,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://api.7wapilot.com http://uatwhatsapp.qiscrm.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://your-api-domain.com"
   }
 }

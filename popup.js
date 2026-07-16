@@ -674,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       api.setTokens(token, authRes?.data?.refreshToken);
-      const result = await api.createCheckoutSession(plan, 'https://main.biliguard.pages.dev/index.html#account', 'https://main.biliguard.pages.dev/index.html#account');
+      const result = await api.createCheckoutSession(plan, 'https://www.biliguard.cc/login/#account', 'https://www.biliguard.cc/login/#account');
       if (result.success && result.data?.url) {
         window.open(result.data.url, '_blank');
       } else {

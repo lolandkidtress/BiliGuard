@@ -87,12 +87,12 @@ const DEFAULT_DATA = {
   tempUnlockUntil: 0,
   videoStats: [],
   blockedVideos: [],
-  apiBaseUrl: 'https://api.7wapilot.com/7wa',
-  // apiBaseUrl: 'http://uatwhatsapp.qiscrm.com/7wa',
+  apiBaseUrl: 'https://your-api-domain.com/7wa',
+  // 请替换为你自己的后端 API 地址
   stripeConfig: {
-    publishableKey: 'pk_live_51PKBRw085USgKgPtZ992f4ITlYmRHSKGgOwxd9WNEUzTSR4n58zq3mVQIlaJoVIyjW03ccsmAc12co3kqwkDbldF00dLqHzNJM',
-    premiumPricingTableId: 'prctbl_1TlRKs085USgKgPtZ70cV7fS',
-    lifetimePricingTableId: 'prctbl_1TlRLN085USgKgPt0jJutNCv'
+    publishableKey: 'pk_test_your_stripe_publishable_key',
+    premiumPricingTableId: 'prctbl_your_premium_table_id',
+    lifetimePricingTableId: 'prctbl_your_lifetime_table_id'
   }
 };
 

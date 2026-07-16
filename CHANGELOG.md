@@ -5,7 +5,7 @@
 ### 新增
 - **黑名单功能**：支持按 UP 主 ID 或 BV 号添加黑名单，在宽松模式 / 时间模式可用时段内生效。
 - **黑名单云端同步**：新增后端 `/bg/blacklist` 接口，黑名单配置可跨设备同步。
-- **静态介绍官网**：新增 `landing/` 页面，部署至 `https://main.biliguard.pages.dev/landing/`。
+- **静态介绍官网**：新增 `landing/` 页面，部署至 `https://www.biliguard.cc/`。
 - **官网 SEO 优化**：完善 meta 标签、Open Graph、Twitter Card、结构化数据（JSON-LD）、robots.txt 和 sitemap.xml。
 
 ### 优化

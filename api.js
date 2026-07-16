@@ -3,7 +3,8 @@
 const api = (function () {
   'use strict';
   // base url 统一从 storage.js 的 DEFAULT_DATA.apiBaseUrl 获取
-  let API_BASE_URL = (typeof DEFAULT_DATA !== 'undefined' && DEFAULT_DATA?.apiBaseUrl) ? DEFAULT_DATA.apiBaseUrl : 'https://api.7wapilot.com/7wa';
+  // 开源版本请替换为你自己的后端 API 地址
+  let API_BASE_URL = (typeof DEFAULT_DATA !== 'undefined' && DEFAULT_DATA?.apiBaseUrl) ? DEFAULT_DATA.apiBaseUrl : 'https://your-api-domain.com/7wa';
   let accessToken = '';
   let refreshToken = '';
 

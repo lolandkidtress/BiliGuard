@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const apiUrl = `${baseUrl}/bg/payment/create-checkout-session?plan=${encodeURIComponent(plan)}&successUrl=${encodeURIComponent('https://main.biliguard.pages.dev/index.html#account')}&cancelUrl=${encodeURIComponent('https://main.biliguard.pages.dev/index.html#account')}`;
+    const apiUrl = `${baseUrl}/bg/payment/create-checkout-session?plan=${encodeURIComponent(plan)}&successUrl=${encodeURIComponent('https://www.biliguard.cc/login/#account')}&cancelUrl=${encodeURIComponent('https://www.biliguard.cc/login/#account')}`;
 
     const resp = await fetch(apiUrl, {
       method: 'GET',
